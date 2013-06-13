@@ -2,11 +2,11 @@ from distutils.core import setup
 
 setup(
     name='htmlPy',
-    version='0.1.1',
+    version='0.1.2',
     author='Amol Mandhane',
     author_email='amol.mandhane@gmail.com',
     packages=['htmlPy'],
-    scripts=[''],
+    scripts=[],
     url='http://pypi.python.org/pypi/htmlPy/',
     license='LICENSE.txt',
     description="A wrapper around PyQt4's webkit library which helps developer create beautiful UI with HTML5, CSS and Javascript for standalone applications.",
