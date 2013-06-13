@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='htmlPy',
-    version='0.1.0',
+    version='0.1.1',
     author='Amol Mandhane',
     author_email='amol.mandhane@gmail.com',
     packages=['htmlPy'],
@@ -11,7 +11,5 @@ setup(
     license='LICENSE.txt',
     description="A wrapper around PyQt4's webkit library which helps developer create beautiful UI with HTML5, CSS and Javascript for standalone applications.",
     long_description=open('README.txt').read(),
-    install_requires=[
-        "PyQt >= 4.0.0",
-    ],
+    install_requires=[],
 )
