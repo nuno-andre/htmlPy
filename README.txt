@@ -9,6 +9,7 @@ A wrapper around PyQt4's webkit library which helps developer create beautiful U
 Requirements
 ============
 Requires PyQt4. Install Manually.
+Uses django.template by default for generating html files with context. Can be overridden.
 
 
 Usage

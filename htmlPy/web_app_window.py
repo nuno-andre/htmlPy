@@ -6,7 +6,7 @@ class WebAppWindow:
         self.app = QtGui.QApplication([])
         # self.window = QtGui.QMainWindow()
         web_app = QtWebKit.QWebView()
-        web_app.windowTitle = title
+        web_app.setWindowTitle(title)
 
         if maximized:
             web_app.showMaximized()

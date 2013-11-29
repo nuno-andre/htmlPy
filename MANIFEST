@@ -6,3 +6,4 @@ setup.py
 docs\dev.txt
 htmlPy\__init__.py
 htmlPy\web_app_window.py
+htmlPy\app_window.py
