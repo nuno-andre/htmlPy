@@ -6,6 +6,5 @@ setup.py
 docs\dev.txt
 htmlPy\__init__.py
 htmlPy\app_window.py
+htmlPy\bridge_helper.py
 htmlPy\web_app_window.py
-htmlPy\url_catcher.js
-htmlPy\bridge_helper.js
