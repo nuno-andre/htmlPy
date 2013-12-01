@@ -1,7 +1,7 @@
 class AppWindow:
     
-    def __init__(self, title="Application", width=800, height=600, x_pos=10, y_pos=10, maximized=False):
-        from PyQt4 import QtGui, QtWebKit
+    def __init__(self, title="Application", width=800, height=600, x_pos=10, y_pos=10, maximized=False, flash=False, developer_mode=False):
+        from PyQt4 import QtGui, QtWebKit, QtCore
 
         self.app = QtGui.QApplication([])
         # self.window = QtGui.QMainWindow()
@@ -13,17 +13,21 @@ class AppWindow:
         else:
             web_app.resize(int(width), int(height))
             web_app.move(int(x_pos), int(y_pos))
+
+        self.developer_mode = developer_mode
+        self.flash = flash
+
+        web_app.settings().setAttribute(QtWebKit.QWebSettings.PluginsEnabled, flash)
+        web_app.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, developer_mode)
+        web_app.settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
         self.web_app = web_app
 
-        from PyQt4 import QtCore
+        from bridge_helper import bridge_helper
+        self.register(bridge_helper)
 
-        class connecter(QtCore.QObject):
-            @QtCore.pyqtSlot()
 
-            def __init__(self):
-                pass
-
-        self.connecter = connecter()
+    def setAssetPath(self, absolute_file_path):
+        self.asset_path = absolute_file_path
 
     def start(self, onstart_callback=None, onclose_callback=None):
         import sys
@@ -40,10 +44,26 @@ class AppWindow:
 
             close_function(onclose_callback, self.app, sys)
 
+    def __addAssetLink__(self, html):
+        if "$asset$" not in html:
+            return html
+
+        fragments = html.split("$asset$", 1)
+        fragments = [fragments[0]] + fragments[1].split("$endasset$", 1)
+        fragments[1] = "file:///" + self.asset_path + fragments[1].strip()
+
+        return self.__addAssetLink__("".join(fragments))
+
     def setHTML(self, html, onset_callback=None):
         from PyQt4.QtCore import QString
+        script = """var anchors=document.getElementsByTagName("a");var forms=document.getElementsByTagName("form");var stripslashes=function(e){if(e.substr(-1)==="/"){return stripslashes(e.substr(0,e.length-1))}if(e.substr(0,1)==="/"){return stripslashes(e.substr(1,e.length))}return e};var link_catch=function(e){e.preventDefault();var elem=e.target||e.srcElement;var call=elem.getAttribute("data-href");if(call===null)return;var params=elem.getAttribute("data-params");params=params!==null?params:"";call=stripslashes(call);var exec=call.replace("/",".");eval(exec+"('"+params+"')")};var form_catch=function(e){e.preventDefault();var elem=e.target||e.srcElement;var action=elem.getAttribute("data-action");if(action===null)return;window.formdata={};for(var i=0,ii=elem.length;i<ii;++i){var input=elem[i];if(input.name){window.formdata[input.name]=input.value;if(input.type==="file"){}}}action=stripslashes(action);var params=elem.getAttribute("data-params");var exec=action.replace("/",".");exec=exec+"('"+JSON.stringify(window.formdata);exec=params!==null?exec+"', '"+params+"')":exec+"')";eval(exec)};var file_dialog=function(e){e.preventDefault();var t=e.target.getAttribute("data-display");var n=e.target.getAttribute("data-filter");n=n!==null&&n!=="null"?n:"Any file (*.*)";var r=BridgeHelper.file_dialog(n);document.getElementById(t).value=r;return false};for(var i=anchors.length-1;i>=0;i--){anchors[i].onclick=link_catch}for(var i=forms.length-1;i>=0;i--){forms[i].onsubmit=form_catch;elem=forms[i];for(var i=0,ii=elem.length;i<ii;++i){var input=elem[i];if(input.type==="file"){var fileboxname=input.getAttribute("name");var filter=input.getAttribute("data-filter");var disabledInput=document.createElement("input");disabledInput.setAttribute("disabled","disabled");disabledInput.setAttribute("name",fileboxname);disabledInput.setAttribute("id",fileboxname+"_path");input.parentNode.insertBefore(disabledInput,input.nextSibling);var button=document.createElement("button");button.innerHTML="Choose file";button.setAttribute("data-display",fileboxname+"_path");button.setAttribute("data-filter",filter);button.onclick=file_dialog;input.parentNode.insertBefore(button,disabledInput.nextSibling);input.style.display="none";elem[i].remove()}}}"""
+        
+        if not self.developer_mode:
+            script = script + ";document.oncontextmenu=function(){return false;};"
 
-        self.web_app.setHtml(QString(html))
+        modified_html = html.replace("</body>", "<script>" + script + "</script></body>")
+
+        self.web_app.setHtml(QString(self.__addAssetLink__(modified_html)))
         self.web_app.show()
         if onset_callback is not None:
             onset_callback()
@@ -57,32 +77,5 @@ class AppWindow:
         c = template.Context(context)
         self.setHTML(t.render(c), onset_callback=onset_callback)
 
-    def __add_module_to_connecter(self, f):
-        import types
-        mod = __import__(f)
-
-        for k, v in mod.__dict__.iteritems():
-            if type(v) is types.MethodType or type(v) is types.FunctionType or type(v) is types.BuiltinFunctionType:
-                self.connecter.__dict__[f.replace(".", "_") + "_" + k] = v
-            elif type(v) is types.InstanceType or type(v) is types.ModuleType:
-                self.__add_module_to_connecter(f + "." + k)
-
-    def __add_functions_to_connecter(self, functions):
-        import types
-                
-        for f in functions:
-            mod = __import__(f)
-
-            if type(mod) is types.MethodType or type(mod) is types.FunctionType or type(mod) is types.BuiltinFunctionType:
-                self.connecter.__dict__[f.replace(".", "_")] = mod
-            elif type(mod) is types.InstanceType or type(mod) is types.ModuleType:
-                self.__add_module_to_connector(f)
-
-    def register(self, arg, *args):
-        if type(arg) is str:
-            arg = [arg]
-
-        functions = arg + args
-        self.__add_functions_to_connecter(functions)
-
-        self.web_app.page().mainFrame().addToJavaScriptWindowObject("python", self.connecter)
+    def register(self, class_instance):
+        self.web_app.page().mainFrame().addToJavaScriptWindowObject(class_instance.__class__.__name__, class_instance)
