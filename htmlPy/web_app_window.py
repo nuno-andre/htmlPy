@@ -1,19 +1,32 @@
 class WebAppWindow:
 
     def __init__(self, title="Application", width=800, height=600, x_pos=10, y_pos=10, maximized=False):
-        from PyQt4 import QtGui, QtWebKit
+        from PyQt4 import QtGui, QtWebKit, QtCore
 
         self.app = QtGui.QApplication([])
         # self.window = QtGui.QMainWindow()
         web_app = QtWebKit.QWebView()
-        web_app.setWindowTitle(title)
+
+        window = QtGui.QMainWindow()
+        window.setCentralWidget(web_app)
+
+        window.setWindowTitle(title)
 
         if maximized:
-            web_app.showMaximized()
+            self.width = -1
+            self.height = -1
+            self.x_pos = -1
+            self.y_pos = -1
+            self.maximized = True
         else:
-            web_app.resize(int(width), int(height))
-            web_app.move(int(x_pos), int(y_pos))
+            self.maximized = False
+            self.width = int(width)
+            self.height = int(height)
+            self.x_pos = int(x_pos)
+            self.y_pos = int(y_pos)
+
         self.web_app = web_app
+        self.window = window
 
     def set_url(self, link):
         from PyQt4.QtCore import QUrl
@@ -21,7 +34,14 @@ class WebAppWindow:
 
     def start(self, onstart_callback=None, onclose_callback=None):
         import sys
-        self.web_app.show()
+        
+        if self.maximized:
+            self.window.showMaximized()
+        else:
+            self.window.resize(self.width, self.height)
+            self.window.move(self.x_pos, self.y_pos)
+            self.window.show()
+
         if onstart_callback is not None:
             onstart_callback()
 

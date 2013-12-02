@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='htmlPy',
-    version='1.0.0',
+    version='1.1.0',
     author='Amol Mandhane',
     author_email='amol.mandhane@gmail.com',
     packages=['htmlPy'],

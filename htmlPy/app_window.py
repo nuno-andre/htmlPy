@@ -6,13 +6,24 @@ class AppWindow:
         self.app = QtGui.QApplication([])
         # self.window = QtGui.QMainWindow()
         web_app = QtWebKit.QWebView()
-        web_app.setWindowTitle(title)
+
+        window = QtGui.QMainWindow()
+        window.setCentralWidget(web_app)
+
+        window.setWindowTitle(title)
 
         if maximized:
-            web_app.showMaximized()
+            self.width = -1
+            self.height = -1
+            self.x_pos = -1
+            self.y_pos = -1
+            self.maximized = True
         else:
-            web_app.resize(int(width), int(height))
-            web_app.move(int(x_pos), int(y_pos))
+            self.maximized = False
+            self.width = int(width)
+            self.height = int(height)
+            self.x_pos = int(x_pos)
+            self.y_pos = int(y_pos)
 
         self.developer_mode = developer_mode
         self.flash = flash
@@ -21,6 +32,7 @@ class AppWindow:
         web_app.settings().setAttribute(QtWebKit.QWebSettings.DeveloperExtrasEnabled, developer_mode)
         web_app.settings().setAttribute(QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
         self.web_app = web_app
+        self.window = window
 
         from bridge_helper import bridge_helper
         self.register(bridge_helper)
@@ -31,7 +43,14 @@ class AppWindow:
 
     def start(self, onstart_callback=None, onclose_callback=None):
         import sys
-        self.web_app.show()
+
+        if self.maximized:
+            self.window.showMaximized()
+        else:
+            self.window.resize(self.width, self.height)
+            self.window.move(self.x_pos, self.y_pos)
+            self.window.show()
+
         if onstart_callback is not None:
             onstart_callback()
 
