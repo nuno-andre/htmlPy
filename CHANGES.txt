@@ -5,3 +5,4 @@ v0.9.0, 30th November 2013 -- AppWindow created. Request loop completion will be
 v1.0.0, 1st December 2013 -- Version completed. Django compatible.
 v1.0.1, 2nd December 2013 -- Fixed bridge import issues.
 v1.1.0, 2nd December 2013 -- Fixed focus issues.
+v1.2.0, 6th December 2013 -- Templating moved to Jinja2.

@@ -41,6 +41,9 @@ class AppWindow:
     def setAssetPath(self, absolute_file_path):
         self.asset_path = absolute_file_path
 
+    def setTemplatePath(self, absolute_file_path):
+        self.template_path = absolute_file_path
+
     def start(self, onstart_callback=None, onclose_callback=None):
         import sys
 
@@ -87,14 +90,13 @@ class AppWindow:
         if onset_callback is not None:
             onset_callback()
 
-    def setTemplate(self, filename, context, onset_callback=None):
-        from django import template
+    def setTemplate(self, filename, context={}, onset_callback=None):
+        import jinja2
 
-        f = open(filename, "r")
+        template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
+        t = template_env.get_template(filename)
 
-        t = template.Template(f.read())
-        c = template.Context(context)
-        self.setHTML(t.render(c), onset_callback=onset_callback)
+        self.setHTML(t.render(**context), onset_callback=onset_callback)
 
     def register(self, class_instance):
         self.web_app.page().mainFrame().addToJavaScriptWindowObject(class_instance.__class__.__name__, class_instance)
