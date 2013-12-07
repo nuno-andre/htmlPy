@@ -34,8 +34,13 @@ class AppWindow:
         self.web_app = web_app
         self.window = window
 
+        self.bridges = []
+
         from bridge_helper import bridge_helper
         self.register(bridge_helper)
+
+        self.asset_path = "./"
+        self.template_path = "./"
 
 
     def setAssetPath(self, absolute_file_path):
@@ -86,6 +91,10 @@ class AppWindow:
         modified_html = html.replace("</body>", "<script>" + script + "</script></body>")
 
         self.web_app.setHtml(QString(self.__addAssetLink__(modified_html)))
+
+        for c in self.bridges:
+            self.register(c)
+        
         self.web_app.show()
         if onset_callback is not None:
             onset_callback()
@@ -100,3 +109,6 @@ class AppWindow:
 
     def register(self, class_instance):
         self.web_app.page().mainFrame().addToJavaScriptWindowObject(class_instance.__class__.__name__, class_instance)
+
+        if class_instance not in self.bridges:
+            self.bridges.append(class_instance)

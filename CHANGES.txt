@@ -7,3 +7,4 @@ v1.0.1, 2nd December 2013 -- Fixed bridge import issues.
 v1.1.0, 2nd December 2013 -- Fixed focus issues.
 v1.2.0, 6th December 2013 -- Templating moved to Jinja2.
 v1.2.1, 7th December 2013 -- Form catching bug fixed.
+v1.3.0, 7th December 2013 -- Fixed slot disappearence after HTML change.
