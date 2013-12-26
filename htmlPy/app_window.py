@@ -118,6 +118,11 @@ class AppWindow:
         except:
             return None
 
+    def renderTemplate(self, filename, context={}):
+        template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
+        t = template_env.get_template(filename)
+        return t.render(**context)
+
     def register(self, class_instance):
         self.web_app.page().mainFrame().addToJavaScriptWindowObject(class_instance.__class__.__name__, class_instance)
 
