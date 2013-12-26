@@ -9,3 +9,4 @@ v1.2.0, 6th December 2013 -- Templating moved to Jinja2.
 v1.2.1, 7th December 2013 -- Form catching bug fixed.
 v1.3.0, 7th December 2013 -- Fixed slot disappearence after HTML change.
 v1.4.0, 24th December 2013 -- Javascript link and form catching changed to live mode.
+v1.5.0, 26th December 2013 -- Added getHTML, getTemplate, execute_javascript methods to AppWindow

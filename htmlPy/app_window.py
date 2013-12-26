@@ -1,3 +1,5 @@
+import jinja2
+
 class AppWindow:
     
     def __init__(self, title="Application", width=800, height=600, x_pos=10, y_pos=10, maximized=False, flash=False, developer_mode=False):
@@ -99,16 +101,28 @@ class AppWindow:
         if onset_callback is not None:
             onset_callback()
 
-    def setTemplate(self, filename, context={}, onset_callback=None):
-        import jinja2
+    def getHTML(self):
+        frame = self.web_app.page().mainFrame()
+        return unicode(frame.toHtml()).encode('utf-8')
 
+    def setTemplate(self, filename, context={}, onset_callback=None):
         template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
         t = template_env.get_template(filename)
 
         self.setHTML(t.render(**context), onset_callback=onset_callback)
+        self.template = filename
+
+    def getTemplate(self):
+        try:
+            return self.template
+        except:
+            return None
 
     def register(self, class_instance):
         self.web_app.page().mainFrame().addToJavaScriptWindowObject(class_instance.__class__.__name__, class_instance)
 
         if class_instance not in self.bridges:
             self.bridges.append(class_instance)
+
+    def execute_javascript(self, JS):
+        self.web_app.page().mainFrame().evaluateJavaScript(JS)
