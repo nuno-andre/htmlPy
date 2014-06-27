@@ -10,8 +10,12 @@ script: nosetests
 virtualenv:
   system_site_packages: true
 
-addons:
-  sauce_connect:
-    username: "amolmandhane"
-    access_key:
-      secure: "XEAsk+X5v46PK1QJ/U98A9MRARLGb1gqpQZe62Z0lbHJxi99OeWczzgTj3Pix4TDco8H4cOQi5Aocl75tJ8lmZ8jdJvbhCqGT0ANvpZIFMpwA/F8PNdXSCEuqXx6HTlfLqwoGdOb/TWE7Opa55FnGbBcMNID3u1sGMO27I/m8Wg="
+# addons:
+#   sauce_connect:
+#     username: "amolmandhane"
+#     access_key:
+#       secure: "XEAsk+X5v46PK1QJ/U98A9MRARLGb1gqpQZe62Z0lbHJxi99OeWczzgTj3Pix4TDco8H4cOQi5Aocl75tJ8lmZ8jdJvbhCqGT0ANvpZIFMpwA/F8PNdXSCEuqXx6HTlfLqwoGdOb/TWE7Opa55FnGbBcMNID3u1sGMO27I/m8Wg="
+
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
