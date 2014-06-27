@@ -38,6 +38,12 @@ class AppWindow:
             self.x_pos = int(x_pos)
             self.y_pos = int(y_pos)
 
+        if self.maximized:
+            window.showMaximized()
+        else:
+            window.resize(self.width, self.height)
+            window.move(self.x_pos, self.y_pos)
+
         self.developer_mode = developer_mode
         self.flash = flash
 
@@ -55,11 +61,11 @@ class AppWindow:
         self.template_path = "./"
         self.__template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
 
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__))), "bridge_helper.min.js") as f:
-            self.script = f.read().strip()
+        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), "bridge_helper.min.js"), "r") as f:
+            self.__bridge_helper_script = f.read().strip()
 
         if not self.developer_mode:
-            self.script = self.script + ";document.oncontextmenu=function(){return false;};"
+            self.__bridge_helper_script = self.__bridge_helper_script + ";document.oncontextmenu=function(){return false;};"
         self.template = None
 
 
@@ -88,13 +94,7 @@ class AppWindow:
         onstart_callback -- Function to be called when application window is closed. Default = None
         """
         import sys
-
-        if self.maximized:
-            self.window.showMaximized()
-        else:
-            self.window.resize(self.width, self.height)
-            self.window.move(self.x_pos, self.y_pos)
-            self.window.show()
+        self.window.show()
 
         if onstart_callback is not None:
             onstart_callback()
@@ -121,9 +121,9 @@ class AppWindow:
 
         fragments = html.split("$asset$", 1)
         fragments = [fragments[0]] + fragments[1].split("$endasset$", 1)
-        fragments[1] = "file:///" + self.asset_path + fragments[1].strip()
+        fragments[1] = "file:///" + os.path.join(self.asset_path, fragments[1].strip())
 
-        return self.__addAssetLink__("".join(fragments))
+        return self.__add_asset_link__("".join(fragments))
 
     def set_html(self, html, onset_callback=None):
         """ Processes and sets HTML in application window.
@@ -137,9 +137,9 @@ class AppWindow:
         """
         from PyQt4.QtCore import QString
 
-        modified_html = html.replace("</body>", "<script>" + self.script + "</script></body>")
+        modified_html = html.replace("</body>", "<script>" + self.__bridge_helper_script + "</script></body>")
 
-        self.web_app.setHtml(QString(self.__addAssetLink__(modified_html)))
+        self.web_app.setHtml(QString(self.__add_asset_link__(modified_html)))
 
         for c in self.bridges:
             self.register(c)

@@ -36,6 +36,12 @@ class WebAppWindow:
             self.x_pos = int(x_pos)
             self.y_pos = int(y_pos)
 
+        if self.maximized:
+            window.showMaximized()
+        else:
+            window.resize(self.width, self.height)
+            window.move(self.x_pos, self.y_pos)
+
         self.developer_mode = developer_mode
         self.flash = flash
 
@@ -70,13 +76,7 @@ class WebAppWindow:
         onstart_callback -- Function to be called when application window is closed. Default = None
         """
         import sys
-
-        if self.maximized:
-            self.window.showMaximized()
-        else:
-            self.window.resize(self.width, self.height)
-            self.window.move(self.x_pos, self.y_pos)
-            self.window.show()
+        self.window.show()
 
         if onstart_callback is not None:
             onstart_callback()
