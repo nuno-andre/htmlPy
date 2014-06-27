@@ -7,5 +7,22 @@
 </head>
 <body>
     <h1>{{ appname }}</h1>
+    <a href="#" data-href="/BridgeCheck/change_superman" id="test_link_click">Superman</a>
+    <br>
+    <a href="" data-href="/BridgeCheck/change_custom/" data-params="Iron man" id="test_link_click_params">Iron man</a>
+    <br>
+    <a href="#" data-href="/BridgeCheck/non_existent/" data-params="Iron man" id="test_link_click_404">None</a>
+    <br><br>
+    <form action="#" data-action="/BridgeCheck/form_batman" id="test_form_submit">
+        <input type="text" id="test_form_submit_input" name="name">
+        <br>
+        <input type="submit" value="Submit" id="test_form_submit_button">
+    </form>
+    <br>
+    <form action="#" data-action="/BridgeCheck/form_joker" data-params="Why so serious?" id="test_form_submit_params">
+        <input type="text" id="test_form_submit_params_input" name="name">
+        <br>
+        <input type="submit" value="Submit" id="test_form_submit_params_button">
+    </form>
 </body>
 </html>
