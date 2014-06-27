@@ -6,7 +6,11 @@ install:
   - "sudo apt-get install python-qt4 python-qt4-dev python-sip python-sip-dev"
   - "pip install -r requirements.txt"
 # command to run tests
-script: nosetests
+
+# Have to disable some tests due to automation incompatibilities of Qt
+# The results of these test vary python/qt version to version
+# However, this should not be an issue in dev/production, only in testing.
+script: nosetests -a '!no-coverage'
 virtualenv:
   system_site_packages: true
 
