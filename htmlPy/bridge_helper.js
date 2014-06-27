@@ -1,52 +1,52 @@
 var stripslashes = function (e) {
-        if (e.substr(-1) === "/") {
-            return stripslashes(e.substr(0, e.length - 1));
-        }
-        if (e.substr(0, 1) === "/") {
-            return stripslashes(e.substr(1, e.length));
-        }
-        return e;
-    };
+    if (e.substr(-1) === "/") {
+        return stripslashes(e.substr(0, e.length - 1));
+    }
+    if (e.substr(0, 1) === "/") {
+        return stripslashes(e.substr(1, e.length));
+    }
+    return e;
+};
 var link_catch = function (e) {
-        e.preventDefault();
-        var elem = e.target || e.srcElement;
-        var call = elem.getAttribute("data-href");
-        if (call === null) return;
-        var params = elem.getAttribute("data-params");
-        params = params !== null ? params : "";
-        call = stripslashes(call);
-        var exec = call.replace("/", ".");
-        eval(exec + "('" + params + "')");
-    };
+    e.preventDefault();
+    var elem = e.target || e.srcElement;
+    var call = elem.getAttribute("data-href");
+    if (call === null) return;
+    var params = elem.getAttribute("data-params");
+    params = params !== null ? params : "";
+    call = stripslashes(call);
+    var exec = call.replace("/", ".");
+    eval(exec + "('" + params + "')");
+};
 var form_catch = function (e) {
-        e.preventDefault();
-        var elem = e.target || e.srcElement;
-        var action = elem.getAttribute("data-action");
-        if (action === null) return;
-        window.formdata = {};
-        for (var i = 0, ii = elem.length; i < ii; ++i) {
-            var input = elem[i];
-            if (input.name) {
-                window.formdata[input.name] = input.value;
-                if (input.type === "file") {}
-            }
+    e.preventDefault();
+    var elem = e.target || e.srcElement;
+    var action = elem.getAttribute("data-action");
+    if (action === null) return;
+    window.formdata = {};
+    for (var i = 0, ii = elem.length; i < ii; ++i) {
+        var input = elem[i];
+        if (input.name) {
+            window.formdata[input.name] = input.value;
+            if (input.type === "file") {}
         }
-        action = stripslashes(action);
-        var params = elem.getAttribute("data-params");
-        var exec = action.replace("/", ".");
-        exec = exec + "('" + JSON.stringify(window.formdata);
-        exec = params !== null ? exec + "', '" + params + "')" : exec + "')";
-        eval(exec);
-    };
+    }
+    action = stripslashes(action);
+    var params = elem.getAttribute("data-params");
+    var exec = action.replace("/", ".");
+    exec = exec + "('" + JSON.stringify(window.formdata);
+    exec = params !== null ? exec + "', '" + params + "')" : exec + "')";
+    eval(exec);
+};
 var file_dialog = function (e) {
-        e.preventDefault();
-        var t = e.target.getAttribute("data-display");
-        var n = e.target.getAttribute("data-filter");
-        n = n !== null && n !== "null" ? n : "Any file (*.*)";
-        var r = BridgeHelper.file_dialog(n);
-        document.getElementById(t).value = r;
-        return false;
-    };
+    e.preventDefault();
+    var t = e.target.getAttribute("data-display");
+    var n = e.target.getAttribute("data-filter");
+    n = n !== null && n !== "null" ? n : "Any file (*.*)";
+    var r = BridgeHelper.file_dialog(n);
+    document.getElementById(t).value = r;
+    return false;
+};
 
 setInterval(function(){
     var anchors = document.getElementsByTagName("a");

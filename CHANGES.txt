@@ -11,3 +11,4 @@ v1.3.0, 7th December 2013 -- Fixed slot disappearence after HTML change.
 v1.4.0, 24th December 2013 -- Javascript link and form catching changed to live mode.
 v1.5.0, 26th December 2013 -- Added getHTML, getTemplate, execute_javascript methods to AppWindow
 v1.5.1, 26th December 2013 -- Added renderTemplate method to AppWindow
+v1.6.0, 27th June 2014 -- Added uniformity in method name convention. Added docstrings for all the functions.

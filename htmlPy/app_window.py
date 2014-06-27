@@ -1,12 +1,23 @@
-import jinja2
+import jinja2, os
 
 class AppWindow:
-    
+
     def __init__(self, title="Application", width=800, height=600, x_pos=10, y_pos=10, maximized=False, flash=False, developer_mode=False):
+        """ Constructor for AppWindow class. Initialized the application.
+
+        Keyword arguments:
+        title   -- Title of the window of the app. Default = "Application"
+        width   -- Width of the window of the app in pixels. Default = 800
+        height  -- height of the window of the app in pixels. Default = 600
+        x_pos   -- X-coordinate of the top left corner of the window in pixels. Default = 10
+        y_pos   -- Y-coordinate of the top left corner of the window in pixels. Default = 10
+        maximized -- Boolean variable to initialize window as maximized. Default = False
+        flash   -- Boolean variable to use flash plugin in the app. Default = False
+        developer_mode -- Boolean variable to use developer tools in the app. Default = False
+        """
         from PyQt4 import QtGui, QtWebKit, QtCore
 
         self.app = QtGui.QApplication([])
-        # self.window = QtGui.QMainWindow()
         web_app = QtWebKit.QWebView()
 
         window = QtGui.QMainWindow()
@@ -36,22 +47,46 @@ class AppWindow:
         self.web_app = web_app
         self.window = window
 
-        self.bridges = []
-
         from bridge_helper import bridge_helper
+        self.bridges = []
         self.register(bridge_helper)
 
         self.asset_path = "./"
         self.template_path = "./"
+        self.__template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
+
+        with open(os.path.join(os.path.abspath(os.path.dirname(__file__))), "bridge_helper.min.js") as f:
+            self.script = f.read().strip()
+
+        if not self.developer_mode:
+            self.script = self.script + ";document.oncontextmenu=function(){return false;};"
+        self.template = None
 
 
-    def setAssetPath(self, absolute_file_path):
+    def set_asset_path(self, absolute_file_path):
+        """ Sets directory for loading assets (CSS, JS, Images etc.) with relative path.
+
+        Arguments:
+        absolute_file_path -- Absolute path to the directory containing all assets.
+        """
         self.asset_path = absolute_file_path
 
-    def setTemplatePath(self, absolute_file_path):
+    def set_template_path(self, absolute_file_path):
+        """ Sets directory for loading templates with relative path using Jinja.
+
+        Arguments:
+        absolute_file_path -- Absolute path to the directory containing all templates.
+        """
         self.template_path = absolute_file_path
+        self.__template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
 
     def start(self, onstart_callback=None, onclose_callback=None):
+        """ Starts the application window.
+
+        Keyword arguments:
+        onstart_callback -- Function to be called when application window is loaded. Default = None
+        onstart_callback -- Function to be called when application window is closed. Default = None
+        """
         import sys
 
         if self.maximized:
@@ -73,7 +108,14 @@ class AppWindow:
 
             close_function(onclose_callback, self.app, sys)
 
-    def __addAssetLink__(self, html):
+    def __add_asset_link__(self, html):
+        """ Processes HTML to change htmlPy asset tags to filepath URLs. Not to be called directly.
+        In HTML, htmlPy asset tags will be like
+        $asset$ css/bootstrap.css $endasset$
+
+        Arguments:
+        html -- The HTML to be processed.
+        """
         if "$asset$" not in html:
             return html
 
@@ -83,51 +125,79 @@ class AppWindow:
 
         return self.__addAssetLink__("".join(fragments))
 
-    def setHTML(self, html, onset_callback=None):
-        from PyQt4.QtCore import QString
-        script = """var stripslashes=function(e){if(e.substr(-1)==="/"){return stripslashes(e.substr(0,e.length-1))}if(e.substr(0,1)==="/"){return stripslashes(e.substr(1,e.length))}return e};var link_catch=function(e){e.preventDefault();var elem=e.target||e.srcElement;var call=elem.getAttribute("data-href");if(call===null)return;var params=elem.getAttribute("data-params");params=params!==null?params:"";call=stripslashes(call);var exec=call.replace("/",".");eval(exec+"('"+params+"')")};var form_catch=function(e){e.preventDefault();var elem=e.target||e.srcElement;var action=elem.getAttribute("data-action");if(action===null)return;window.formdata={};for(var i=0,ii=elem.length;i<ii;++i){var input=elem[i];if(input.name){window.formdata[input.name]=input.value;if(input.type==="file"){}}}action=stripslashes(action);var params=elem.getAttribute("data-params");var exec=action.replace("/",".");exec=exec+"('"+JSON.stringify(window.formdata);exec=params!==null?exec+"', '"+params+"')":exec+"')";eval(exec)};var file_dialog=function(e){e.preventDefault();var t=e.target.getAttribute("data-display");var n=e.target.getAttribute("data-filter");n=n!==null&&n!=="null"?n:"Any file (*.*)";var r=BridgeHelper.file_dialog(n);document.getElementById(t).value=r;return false};setInterval(function(){var e=document.getElementsByTagName("a");var t=document.getElementsByTagName("form");for(var n=e.length-1;n>=0;n--){if(!e[n].classList.contains("htmlpy-activated")){e[n].onclick=link_catch;e[n].classList.add("htmlpy-activated")}}for(var r=t.length-1;r>=0;r--){if(!t[r].classList.contains("htmlpy-activated")){t[r].onsubmit=form_catch;elem=t[r];for(n=0,ii=elem.length;n<ii;++n){var i=elem[n];if(i.type==="file"){var s=i.getAttribute("name");var o=i.getAttribute("data-filter");var u=document.createElement("input");u.setAttribute("disabled","disabled");u.setAttribute("name",s);u.setAttribute("id",s+"_path");i.parentNode.insertBefore(u,i.nextSibling);var a=document.createElement("button");a.innerHTML="Choose file";a.setAttribute("data-display",s+"_path");a.setAttribute("data-filter",o);a.onclick=file_dialog;i.parentNode.insertBefore(a,u.nextSibling);i.style.display="none";elem[n].remove()}}t[r].classList.add("htmlpy-activated")}}},100)"""
-        
-        if not self.developer_mode:
-            script = script + ";document.oncontextmenu=function(){return false;};"
+    def set_html(self, html, onset_callback=None):
+        """ Processes and sets HTML in application window.
+        This function does asset tags processing, adds bridge helper scripts, adds previously added bridges
 
-        modified_html = html.replace("</body>", "<script>" + script + "</script></body>")
+        Arguments:
+        html -- The HTML to be processed and set.
+
+        Keyword arguments:
+        onset_callback -- The function to be called after setting HTML. Default = None
+        """
+        from PyQt4.QtCore import QString
+
+        modified_html = html.replace("</body>", "<script>" + self.script + "</script></body>")
 
         self.web_app.setHtml(QString(self.__addAssetLink__(modified_html)))
 
         for c in self.bridges:
             self.register(c)
-        
+
         self.web_app.show()
         if onset_callback is not None:
             onset_callback()
 
-    def getHTML(self):
+    def get_html(self):
+        """ Returns the processed HTML set in current window. """
         frame = self.web_app.page().mainFrame()
         return unicode(frame.toHtml()).encode('utf-8')
 
-    def setTemplate(self, filename, context={}, onset_callback=None):
-        template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
-        t = template_env.get_template(filename)
+    def set_template(self, template_relative_path, context={}, onset_callback=None):
+        """ Sets HTML template to the window after parsing it with Jinja and htmlPy processers.
 
-        self.setHTML(t.render(**context), onset_callback=onset_callback)
-        self.template = filename
+        Arguments:
+        template_relative_path -- The path to the Jinja template file relative to the base template path.
 
-    def getTemplate(self):
-        try:
-            return self.template
-        except:
-            return None
+        Keyword arguments:
+        context -- The dictionary to be used as context while rendering Jinja template. Default = {}
+        onset_callback -- The function to be called after setting HTML. Default = None
+        """
+        html = self.render_template(template_relative_path, context)
+        self.set_html(html, onset_callback=onset_callback)
+        self.template = template_relative_path
 
-    def renderTemplate(self, filename, context={}):
-        template_env = jinja2.Environment(loader=jinja2.FileSystemLoader(self.template_path))
-        t = template_env.get_template(filename)
+    def get_template(self):
+        """ Returns the path of the Jinja template file relative the to base tempalte path. """
+        return self.template
+
+    def render_template(self, template_relative_path, context={}):
+        """ Returns parsed HTML of the Jinja HTML template after parsing it with Jinja parser.
+
+        Arguments:
+        template_relative_path -- The path to the Jinja template file relative to the base template path.
+
+        Keyword arguments:
+        context -- The dictionary to be used as context while rendering Jinja template. Default = {}
+        """
+        t = self.__template_env.get_template(template_relative_path)
         return t.render(**context)
 
     def register(self, class_instance):
+        """ Adds a class instance to the application bridge for calling from javascript.
+
+        Arguments:
+        class_instance -- Instance of a class which inherits htmlPy.Bridge
+        """
         self.web_app.page().mainFrame().addToJavaScriptWindowObject(class_instance.__class__.__name__, class_instance)
 
         if class_instance not in self.bridges:
             self.bridges.append(class_instance)
 
     def execute_javascript(self, JS):
+        """ Execute javascript in current window.
+
+        Arguments:
+        JS -- The javascript to be executed as string.
+        """
         self.web_app.page().mainFrame().evaluateJavaScript(JS)
