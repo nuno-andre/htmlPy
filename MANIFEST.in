@@ -1,4 +1,0 @@
-include *.txt
-recursive-include docs *.txt *.py
-include htmlPy/*.js
-recursive-exclude tests
