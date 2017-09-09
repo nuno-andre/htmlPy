@@ -1,6 +1,8 @@
-import htmlPy
-from PySide import QtGui
 import json
+
+from qtpy import QtGui
+
+import htmlPy
 
 
 class GUIHelper(htmlPy.Object):
