@@ -1,7 +1,10 @@
-from PySide import QtGui, QtWebKit
-from . import settings, descriptors, unicode
 import abc
 import sys
+
+from qtpy import QtGui, QtWidgets
+from qtpy import QtWebEngineWidgets
+
+from . import settings, descriptors, unicode
 
 
 RIGHT_CLICK_SETTING_KEY = "RIGHT_CLICK"
@@ -71,19 +74,19 @@ class BaseGUI(object):
                  allow_overwrite=False):
         """ Abstract constructor for the :py:class:`htmlPy.BaseGUI` class """
 
-        app = QtGui.QApplication.instance()
+        app = QtWidgets.QApplication.instance()
         if app is not None and not allow_overwrite:
             raise RuntimeError("Another htmlPy application is already running")
         elif app is not None:
             self.app = app
         else:
-            self.app = QtGui.QApplication(sys.argv)
+            self.app = QtWidgets.QApplication(sys.argv)
 
-        self.web_app = QtWebKit.QWebView()
-        self.window = QtGui.QMainWindow()
+        self.web_app = QtWebEngineWidgets.QWebEngineView()
+        self.window = QtWidgets.QMainWindow()
         self.window.setCentralWidget(self.web_app)
         self.web_app.settings().setAttribute(
-            QtWebKit.QWebSettings.LocalContentCanAccessRemoteUrls, True)
+            QtWebEngineWidgets.QWebEngineSettings.LocalContentCanAccessRemoteUrls, True)
 
         self._javascript_settings = {}
         self.web_app.loadFinished.connect(self.__javascript_setting_call)
@@ -119,16 +122,20 @@ class BaseGUI(object):
     plugins = descriptors.LiveProperty(
         bool,
         lambda instance: instance.web_app.settings().testAttribute(
-            QtWebKit.QWebSettings.PluginsEnabled),
+            QtWebEngineWidgets.QWebEngineSettings.PluginsEnabled),
         lambda instance, value: instance.web_app.settings().setAttribute(
             QtWebKit.QWebSettings.PluginsEnabled, value))
 
+    '''
     developer_mode = descriptors.LiveProperty(
         bool,
         lambda instance: instance.web_app.settings().testAttribute(
-            QtWebKit.QWebSettings.WebAttribute.DeveloperExtrasEnabled),
+            #QtWebKit.QWebSettings.WebAttribute.DeveloperExtrasEnabled),
+            QtWebEngineWidgets.QWebEngineSettings.WebAttribute.DeveloperExtrasEnabled, value))
         lambda instance, value: instance.web_app.settings().setAttribute(
-            QtWebKit.QWebSettings.WebAttribute.DeveloperExtrasEnabled, value))
+            #QtWebEngineWidgets.QWebEngineSettings.PluginsEnabled, value))
+            QtWebEngineWidgets.QWebEngineSettings.WebAttribute.DeveloperExtrasEnabled, value))
+    '''
 
     def __javascript_setting_call(self):
         """ Re-evaluate javascript settings
